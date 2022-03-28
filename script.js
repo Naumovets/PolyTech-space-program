@@ -8,6 +8,8 @@ function main () {
 	var scale = document.getElementById("scale").value;
 	var sputnik = document.getElementById("sputnik").checked;
 	var planet = document.getElementById("planet").checked;
+	var comete = document.getElementById("comete").checked;
+	var seemks = document.getElementById("seemks").checked;
 	var oldScale = scale;
 
 	// космический объект
@@ -32,6 +34,11 @@ function main () {
 				ctx.strokeText(this.name + " ("+this.breed+")", this.x, this.y-this.r-20);
 			}
 			else if(this.breed == "sputnik" && sputnik){
+				ctx.textAlign = "center";
+				ctx.strokeStyle = "#ffffff";
+				ctx.strokeText(this.name + " ("+this.breed+")", this.x, this.y-this.r-20);
+			}
+			else if(this.breed == "comete" && comete){
 				ctx.textAlign = "center";
 				ctx.strokeStyle = "#ffffff";
 				ctx.strokeText(this.name + " ("+this.breed+")", this.x, this.y-this.r-20);
@@ -77,12 +84,13 @@ function main () {
 
 
 
-	var a = new SpaceObject("Земля","planet",0, 0, 6371000, 0, 0, 6*10**24, "blue");
-	var b = new SpaceObject("Луна","sputnik", 384400000, 0, 1737000, 0, 1023,7.6*10**22, "white");
-
+	var earth = new SpaceObject("Земля","planet",0, 0, 6371000, 0, 0, 6*10**24, "blue");
+	var moon = new SpaceObject("Луна","sputnik", 384400000+earth.r*scale, 0, 1737000, 0, 1023,7.6*10**22, "white");
+	var mks = new SpaceObject("Мкс","sputnik", 0, 408000+earth.r*scale, 110, 7660, 0,420000, "white");
 	var objects = [];
-	objects.push(a);
-	objects.push(b);
+	objects.push(earth);
+	objects.push(moon);
+	objects.push(mks);
 
 	// отрисовка всех объектов симуляции
 	function draw (){
@@ -117,7 +125,7 @@ function main () {
 	}
 
 	// реагирование на изменение характеристик
-	function process(){
+	function checkprocess(){
 		scale = document.getElementById("scale").value;
 		document.getElementById("scaleValue").innerHTML = "Scale: " + scale;
 		if(oldScale != scale){
@@ -128,6 +136,18 @@ function main () {
 		document.getElementById("timeSpeedValue").innerHTML = "Time speed: " + timeSpeed;
 		sputnik = document.getElementById("sputnik").checked;
 		planet = document.getElementById("planet").checked;
+		comete = document.getElementById("comete").checked;
+		seemks = document.getElementById("seemks").checked;
+
+		if(seemks){
+			var x = mks.x-w/2;
+			var y = mks.y-h/2;
+			for(var i = 0; i<objects.length; i++){
+				objects[i].y -= y;
+				objects[i].x -= x;
+			}
+		}
+
 	}
 
 	// управление камерой с помощью клавиатуры
@@ -135,22 +155,22 @@ function main () {
 		document.addEventListener('keydown', function(event) {
 			if (event.code == 'KeyW') {
 			  for(var i = 0; i<objects.length; i++){
-				objects[i].y -= 50000/scale;
+				objects[i].y += 50000/(50000000-scale);
 			  }
 			}
 			else if (event.code == 'KeyA') {
 				for(var i = 0; i<objects.length; i++){
-				  objects[i].x -= 50000/scale;
+				  objects[i].x += 50000/(50000000-scale);
 				}
 			}
 			else if (event.code == 'KeyD') {
 			  for(var i = 0; i<objects.length; i++){
-				objects[i].x += 50000/scale;
+				objects[i].x -= 50000/(50000000-scale);
 			  }
 			}
 			else if (event.code == 'KeyS') {
 				for(var i = 0; i<objects.length; i++){
-				  objects[i].y += 50000/scale;
+				  objects[i].y -= 50000/(50000000-scale);
 				}
 			}
 		});
@@ -160,9 +180,9 @@ function main () {
 
 	function control () {
 		phys();
-		draw();
-		process();
+		checkprocess();
 		manage();
+		draw();
 	}
 
 	draw();
